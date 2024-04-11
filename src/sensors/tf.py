@@ -106,6 +106,29 @@ def setup_tf_graph(cfg: Config, simulation_app: SimulationApp, stage: Stage):
             },
         )
 
+    controller.edit(
+        graph,
+        {
+            og.Controller.Keys.CREATE_NODES: [
+                ("rosComputeOdometryNode", "omni.isaac.core_nodes.IsaacComputeOdometry"),
+                ("odomPublisher", f"{ros_bridge}.ROS{ros_v}PublishOdometry"),
+            ],
+            og.Controller.Keys.CONNECT: [
+                ("OnTick.outputs:tick", "rosComputeOdometryNode.inputs:execIn"),
+                ("OnTick.outputs:tick", "odomPublisher.inputs:execIn"),
+                ("ReadSimTime.outputs:simulationTime", "odomPublisher.inputs:timeStamp"),
+                ("rosComputeOdometryNode.outputs:position", "odomPublisher.inputs:position"),
+                ("rosComputeOdometryNode.outputs:orientation", "odomPublisher.inputs:orientation"),
+                ("rosComputeOdometryNode.outputs:linearVelocity", "odomPublisher.inputs:linearVelocity"),
+                ("rosComputeOdometryNode.outputs:angularVelocity", "odomPublisher.inputs:angularVelocity"),
+            ],
+            og.Controller.Keys.SET_VALUES: [
+                    ("odomPublisher.inputs:topicName", "/localization_gt"),
+                    # ("rosComputeOdometryNode.inputs:chassisPrim", "/World/Husky_Robot/base_link"),
+                    ("odomPublisher.inputs:odomFrameId", "odom")
+                ],
+        },
+    )
    
     # * TF Tree
     set_targets(

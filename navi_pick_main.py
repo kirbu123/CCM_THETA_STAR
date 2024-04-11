@@ -109,6 +109,8 @@ extensions.enable_extension(cfg.ros_cfg[cfg.ros].ros_bridge_extension)
 if cfg.ros_cfg[cfg.ros].ros_v == 1:
     import rosgraph
     import rospy
+    from rosnode import get_node_names
+
     rospy.init_node('navi_pick_main_node')
     if not rosgraph.is_master_online():
         carb.log_error("Please run roscore before executing this script")
@@ -191,9 +193,9 @@ elif cfg.mode == "offline":
     )
 
     # Add scenario to queue
-    # task_queue.put(("move_to_location_by_coordinates", [18.0, 0.2]))
-    # add_scenario_to_queue(cfg, task_queue)
-    # setup_scene_for_scenario(cfg, my_world)
+    task_queue.put(("move_to_location_by_coordinates", [1.9440345764160156, -2.3873443603515625])) # data: [-0.01564454473555088, -0.1015431135892868, 1.9440345764160156, -2.3873443603515625, 0.0]
+    add_scenario_to_queue(cfg, task_queue)
+    setup_scene_for_scenario(cfg, my_world)
 
 else:
     raise ValueError(f"Unknown mode: {cfg.mode}")
@@ -205,8 +207,6 @@ import rospy
 
 # from track_pkg.msg import TrackCoordinateAction, TrackCoordinateActionGoal, TrackCoordinateActionResult, TrackCoordinateActionFeedback
 # from track_pkg.msg import TrackTrajectoryAction, TrackTrajectoryActionGoal, TrackTrajectoryActionResult, TrackTrajectoryActionFeedback
-
-# rospy.init_node('track_client')
 
 # def track_client_by_coordinate():
 #     position, orientation = controller._husky.get_world_pose()
@@ -250,7 +250,7 @@ import rospy
 
 # TRACK_PIPELINE = 'TRAJECTORY' # can be switched on COORDINATE
 
-# ######################################### server-client connection ##########################################
+# ######################################### server-client connection ##########################################    
 
 base_controller.reset()
 
@@ -258,59 +258,54 @@ while simulation_app.is_running():
     my_world.step(render=True)
 
     TELEOP = False
+    TASK_BY_GOAL = False
+    THETA_STAR_NODENAME = '/action_server' # in code from_rviz.py it's name is tx2_action_server
     if TELEOP:
         controller.move_by_keyboard(base_controller.forward(action))
-    else:
+    elif TASK_BY_GOAL:
         controller.move_by_cmd_vel_msgs()
+    else:
+        if not task_queue.empty():
+            try:
+                get_node_names().index(THETA_STAR_NODENAME)
+            except Exception:
+                print('Theta star node is not activated (Waiting for the planner...)')
+                continue
+            if my_world.is_playing():
+                server_name, task = task_queue.get()
+                print(f"Main thread processing: task: {task.__str__()} server_id: {server_name}")
 
-    
-
-
-
-    # if not task_queue.empty():
-    #     my_world.step(render=True)
-    #     if my_world.is_playing():
-    #         server_name, task = task_queue.get()
-    #         print(f"Main thread processing: task: {task.__str__()} server_id: {server_name}")
-
-    #         if server_name == "move_to_location":
-    #             controller.move_to_location(task, action_servers[server_name])
-    #             time.sleep(2)
-    #             task_queue.task_done()
-    #         elif server_name == "move_to_location_by_coordinates":
-    #             controller.move_to_location_by_coordinates(task, action_servers[server_name])
-    #             time.sleep(2)
-    #             task_queue.task_done()
-    #         elif server_name == 'move_to_location_by_trajectory':
-    #             controller.move_to_location_by_trajectory(task, action_servers[server_name])
-    #             time.sleep(2)
-    #             task_queue.task_done()
-    #         elif server_name == "pick_up_object":
-    #             controller.pickup_object(task, action_servers[server_name])
-    #             time.sleep(2)
-    #             task_queue.task_done()
-    #         elif server_name == "put_object":
-    #             controller.put_object(task, action_servers[server_name])
-    #             time.sleep(2)
-    #             task_queue.task_done()
-    #         elif server_name == "text_query_generation":
-    #             pass
-    #         else:
-    #             print(f"Unknown server name: {server_name}")
-    #             print(f"Task: {task.__str__()}")
-    #             continue
-    # else:
-    #     print("Waiting for tasks... 1, 2, 3... 10")
-    #     try:
-    #         if TRACK_PIPELINE == 'COORDINATE':
-    #             track_client_by_coordinate() # coordinate (simple linear planning) version
-    #         elif TRACK_PIPELINE == 'TRAJECTORY':
-    #             track_client_by_trajectory() # theta star trajectory (actual) version
-    #     except Exception:
-    #         traceback.print_exc()
-    #     for step in range(10):
-    #         my_world.step(render=True)
-    #         time.sleep(0.05)
+                if server_name == "move_to_location":
+                    controller.move_to_location(task, action_servers[server_name])
+                    time.sleep(2)
+                    task_queue.task_done()
+                elif server_name == "move_to_location_by_coordinates":
+                    controller.move_to_location_by_coordinates(task, action_servers[server_name])
+                    time.sleep(2)
+                    task_queue.task_done()
+                elif server_name == 'move_to_location_by_trajectory':
+                    controller.move_to_location_by_trajectory(task, action_servers[server_name])
+                    time.sleep(2)
+                    task_queue.task_done()
+                elif server_name == "pick_up_object":
+                    controller.pickup_object(task, action_servers[server_name])
+                    time.sleep(2)
+                    task_queue.task_done()
+                elif server_name == "put_object":
+                    controller.put_object(task, action_servers[server_name])
+                    time.sleep(2)
+                    task_queue.task_done()
+                elif server_name == "text_query_generation":
+                    pass
+                else:
+                    print(f"Unknown server name: {server_name}")
+                    print(f"Task: {task.__str__()}")
+                    continue
+        else:
+            print("Waiting for tasks... 1, 2, 3... 10")
+            for step in range(10):
+                my_world.step(render=True)
+                time.sleep(0.05)
 
 
 simulation_app.close()  # close Isaac Sim

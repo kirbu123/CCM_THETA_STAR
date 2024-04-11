@@ -3,6 +3,16 @@ import numpy as np
 from src.config import get_config
 from src.actions.wheel import CmdVelDiffController
 
+import rospy
+
+from nav_msgs.msg import Odometry
+
+import math
+
+import tf
+
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension
+
 cfg = get_config()
 
 if cfg.mode == "online":
@@ -60,6 +70,11 @@ class HuskyController:
             simulation_app (SimulationApp): The Isaac simulation application object.
         """
         # Initialize attributes
+        self.odom_subscriber = rospy.Subscriber('/cartographer/tracked_global_odometry', Odometry, self.odom_callback)
+        self._husky_position = [0, 0]
+        self._stop_distance = 0.05
+        self._start_distance = 0
+        self.task_publisher = rospy.Publisher('/task', Float32MultiArray, queue_size=5)
         self._cfg = cfg
         self.world = world
         self.simulation_app = simulation_app
@@ -98,6 +113,11 @@ class HuskyController:
         # Set up sensors if enabled
         if self._cfg.use_sensors:
             self._setup_sensors()
+
+
+    def odom_callback(self, msg):
+        self.current_pose = msg.pose.pose
+        self._husky_position[0], self._husky_position[1] = self.current_pose.position.x, self.current_pose.position.y
 
     def _setup_sensors(self):
         """
@@ -141,85 +161,55 @@ class HuskyController:
 
         print(f"Now move to {obj_move_str}, position {position_obj_move.__repr__()}\n")
 
-        distance = 100
-        if (_object == "table") or (_object == "drawer"):
-            stop_distance = 1.6
-        else:
-            stop_distance = 1.2
-        while not (distance < stop_distance):
-            # Sending feedback if not offline
-            feedback = MoveToFeedback()
-            feedback.x = position_obj_move[0]
-            feedback.y = position_obj_move[1]
-            action_server.put_feedback(feedback)
-            # \\\\\\
-            position, orientation = self._husky.get_world_pose()
-            wheel_actions = self._husky_controller.forward(
-                start_position=position,
-                start_orientation=orientation,
-                goal_position=position_obj_move[:2],
-                lateral_velocity=self._cfg.lateral_velocity,
-                yaw_velocity=self._cfg.yaw_velocity,
-                position_tol=self._cfg.position_tol,
-            )
+        task = Float32MultiArray()
+        task.layout.data_offset = 0
+        task.layout.dim.append(MultiArrayDimension())
+        task.layout.dim[0].label = "width"
+        task.layout.dim[0].size = 5
+        task.layout.dim[0].stride = 5
 
-            wheel_actions.joint_velocities = np.tile(wheel_actions.joint_velocities, 2)
-            self._husky.apply_wheel_actions(wheel_actions)
-            self.world.step(render=True)
-            distance = np.sum(
-                (self._husky.get_world_pose()[0][:2] - position_obj_move[:2]) ** 2
-            )  # Compute distance   between husky and target
+        position, orientation = self._husky.get_world_pose() # be carefull, this is world frame odometry
 
-        # Sending result
-        result = MoveToResult()
-        result.result = f"Done! Distance to goal {obj_move_str}: {distance}"
-        action_server.put_result(result)
-        print(f"Result sent: {result}")
+        _, __, target_theta = tf.transformations.euler_from_quaternion(orientation)
 
-    def move_to_location_by_coordinates(self, task: list, action_server: ActionServer) -> None:
+        
+
+        task.data = [position[0], position[1], position_obj_move[0], position_obj_move[1], 0]
+        self.task_publisher.publish(task)
+
+    def move_to_location_by_coordinates(self, goal: list, action_server: ActionServer) -> None:
         """
         Moves the Husky robot to a specified location.
 
         Args:
-            task: The task object containing the location to move to (in coordinates).
+            task: The task object containing the location to move to.
             action_server: The action server object for the move to location action.
         """
         stage = get_current_stage()
 
-        distance = 100
+        # BE CAREFULL THIS IS WORLD TOPIC ODOMETRY
+        # position, orientation = self._husky.get_world_pose()
 
-        stop_distance = 1.2
+        self._start_distance = math.sqrt((goal[0] - self._husky_position[0]) ** 2 + (goal[1] - self._husky_position[1]) ** 2)
 
-        while not (distance < stop_distance):
-            # Sending feedback if not offline
-            feedback = MoveToFeedback()
-            feedback.x = task[0]
-            feedback.y = task[1]
-            action_server.put_feedback(feedback)
-            # \\\\\\
+        while (self._stop_distance * self._start_distance < math.sqrt((goal[0] - self._husky_position[0]) ** 2 + (goal[1] - self._husky_position[1]) ** 2)):
+            print("MIN_DIST : " + str(self._stop_distance * self._start_distance) + ' ' + "ACTUAL_DIST: " + str(math.sqrt((goal[0] - self._husky_position[0]) ** 2 + (goal[1] - self._husky_position[1]) ** 2)))
+            
+            task = Float32MultiArray()
+            task.layout.data_offset = 0
+            task.layout.dim.append(MultiArrayDimension())
+            task.layout.dim[0].label = "width"
+            task.layout.dim[0].size = 5
+            task.layout.dim[0].stride = 5
+        
+            task.data = [self._husky_position[0], self._husky_position[1], goal[0], goal[1], 0]
 
-            position, orientation = self._husky.get_world_pose()
-            wheel_actions = self._husky_controller.forward(
-                start_position=position,
-                start_orientation=orientation,
-                goal_position=task[:2],
-                lateral_velocity=self._cfg.lateral_velocity,
-                yaw_velocity=self._cfg.yaw_velocity,
-                position_tol=self._cfg.position_tol,
-            )
+            print([self._husky_position[0], self._husky_position[1], goal[0], goal[1], 0])
 
-            wheel_actions.joint_velocities = np.tile(wheel_actions.joint_velocities, 2)
-            self._husky.apply_wheel_actions(wheel_actions)
+            self.task_publisher.publish(task)
             self.world.step(render=True)
-            distance = np.sum(
-                (self._husky.get_world_pose()[0][:2] - task[:2]) ** 2
-            )  # Compute distance   between husky and target
+            self.move_by_cmd_vel_msgs()
 
-        # Sending result
-        result = MoveToResult()
-        result.result = f"Done!"
-        action_server.put_result(result)
-        print(f"Result sent: {result}")
 
     def move_to_location_by_trajectory(self, task: list, action_server: ActionServer) -> None:
         """
@@ -247,9 +237,9 @@ class HuskyController:
         result.result = f"Done!"
         action_server.put_result(result)
         print(f"Result sent: {result}")
+    
 
     def move_by_cmd_vel_msgs(self):
-        print('cmd_vel step')
         self._husky.apply_wheel_actions(self.controller.forward())
 
     def move_by_keyboard(self, vel):
