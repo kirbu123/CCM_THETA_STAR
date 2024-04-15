@@ -78,7 +78,7 @@ class MoveRobot:
         task.data = [start_x, start_y, goal_x, goal_y, goal_theta]
         self.task_publisher.publish(task)
 
-    def goal_callback( self, msg ):
+    def goal_callback(self, msg):
         target_x, target_y = msg.pose.position.x, msg.pose.position.y
         _, __, target_theta = tf.transformations.euler_from_quaternion([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w])
         self.goal_position = (target_x, target_y)
