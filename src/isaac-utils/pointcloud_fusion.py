@@ -36,28 +36,38 @@ class PointcloudIsaacNode:
         self.pcd_pub = rospy.Publisher(
             args.velodyne_topic_fusion,
             PointCloud2,
-            queue_size=10
+            queue_size=1
         )
-        self.timer = rospy.Timer(rospy.Duration(1.5), self.on_publish)
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.on_publish)
         self.frame = args.frame_id
         self.pcd2 = None
         self.time =rospy.Time()
+        self.list_points = []
 
     def on_pcds(self, msg):
+        # print(self.list_points)
         if self.pcd2 is None:
             self.pcd2 = ros_numpy.numpify(msg)
+            self.list_points.append(ros_numpy.numpify(msg))
         else:
-            self.pcd2 = np.concatenate((self.pcd2, ros_numpy.numpify(msg)))
+            if len(self.list_points) > 6:
+                # print(self.list_points)
+                self.list_points.pop(0)
+            # print(len(self.list_points))
             self.frame = msg.header.frame_id
             self.time = msg.header.stamp
+            self.list_points.append(ros_numpy.numpify(msg))
 
     def on_publish(self, event=None):
         if not self.pcd2 is None:
+            # print(len(self.list_points[0]))
+            self.pcd2 = np.array(self.list_points)
+            self.pcd2 = np.concatenate(self.pcd2, axis=0)
+            # print(self.pcd2)
             msg_pub = ros_numpy.msgify(PointCloud2, self.pcd2)
             msg_pub.header.frame_id = self.frame
             msg_pub.header.stamp = self.time
             self.pcd_pub.publish(msg_pub)
-            self.pcd2 = None
             
 def main(args):
     node = PointcloudIsaacNode(args)
