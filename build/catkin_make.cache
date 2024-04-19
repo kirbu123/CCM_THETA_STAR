@@ -1,0 +1,2 @@
+MPC_Local_Planner
+-DCATKIN_DEVEL_PREFIX=/home/vitaly/local_planner_ws/devel -DCMAKE_INSTALL_PREFIX=/home/vitaly/local_planner_ws/install -G Unix Makefiles
