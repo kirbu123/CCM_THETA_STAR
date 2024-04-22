@@ -4,6 +4,17 @@
         "ranges": "cpp",
         "sstream": "cpp",
         "regex": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "*.tcc": "cpp",
+        "deque": "cpp",
+        "forward_list": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "any": "cpp",
+        "system_error": "cpp",
+        "external_function_interface.h": "c"
     }
 }

@@ -352,6 +352,9 @@ SETUPTOOLS_DEB_LAYOUT:BOOL=ON
 //Name of the computer/site where compile is being run
 SITE:STRING=linar-B360M-D2V
 
+//The directory containing a CMake configuration file for Torch.
+Torch_DIR:PATH=Torch_DIR-NOTFOUND
+
 //LSB Distrib tag
 UBUNTU:BOOL=TRUE
 
@@ -462,7 +465,7 @@ gtest_hide_internal_symbols:BOOL=OFF
 gtest_main_LIB_DEPENDS:STATIC=general;gtest;
 
 //Path to a library.
-lib:FILEPATH=/home/vitaly/ros_catkin_ws/devel_isolated/xmlrpcpp/lib/libxmlrpcpp.so
+lib:FILEPATH=/home/vitaly/ros_catkin_ws/devel_isolated/tf2/lib/libtf2.so
 
 //Value Computed by CMake
 map_msgs_BINARY_DIR:STATIC=/home/vitaly/theta_star_ws/build/navigation_msgs/map_msgs
@@ -485,9 +488,6 @@ message_runtime_DIR:PATH=/home/vitaly/ros_catkin_ws/devel_isolated/message_runti
 //Value Computed by CMake
 move_base_msgs_BINARY_DIR:STATIC=/home/vitaly/theta_star_ws/build/navigation_msgs/move_base_msgs
 
-//The directory containing a CMake configuration file for move_base_msgs.
-move_base_msgs_DIR:PATH=/home/vitaly/theta_star_ws/devel/share/move_base_msgs/cmake
-
 //Value Computed by CMake
 move_base_msgs_IS_TOP_LEVEL:STATIC=OFF
 
@@ -495,13 +495,13 @@ move_base_msgs_IS_TOP_LEVEL:STATIC=OFF
 move_base_msgs_SOURCE_DIR:STATIC=/home/vitaly/theta_star_ws/src/navigation_msgs/move_base_msgs
 
 //Value Computed by CMake
-mpc_planner_BINARY_DIR:STATIC=/home/vitaly/theta_star_ws/build/MPC_Local_Planner
+mpc_l4c_planner_10cm_BINARY_DIR:STATIC=/home/vitaly/theta_star_ws/build/mpc_l4c_planner_npfield
 
 //Value Computed by CMake
-mpc_planner_IS_TOP_LEVEL:STATIC=OFF
+mpc_l4c_planner_10cm_IS_TOP_LEVEL:STATIC=OFF
 
 //Value Computed by CMake
-mpc_planner_SOURCE_DIR:STATIC=/home/vitaly/theta_star_ws/src/MPC_Local_Planner
+mpc_l4c_planner_10cm_SOURCE_DIR:STATIC=/home/vitaly/theta_star_ws/src/mpc_l4c_planner_npfield
 
 //The directory containing a CMake configuration file for nav_msgs.
 nav_msgs_DIR:PATH=/home/vitaly/ros_catkin_ws/devel_isolated/nav_msgs/share/nav_msgs/cmake
@@ -539,9 +539,6 @@ std_msgs_DIR:PATH=/home/vitaly/ros_catkin_ws/devel_isolated/std_msgs/share/std_m
 //The directory containing a CMake configuration file for tf2.
 tf2_DIR:PATH=/home/vitaly/ros_catkin_ws/devel_isolated/tf2/share/tf2/cmake
 
-//The directory containing a CMake configuration file for tf2_geometry_msgs.
-tf2_geometry_msgs_DIR:PATH=/home/vitaly/ros_catkin_ws/devel_isolated/tf2_geometry_msgs/share/tf2_geometry_msgs/cmake
-
 //The directory containing a CMake configuration file for tf2_msgs.
 tf2_msgs_DIR:PATH=/home/vitaly/ros_catkin_ws/devel_isolated/tf2_msgs/share/tf2_msgs/cmake
 
@@ -553,30 +550,6 @@ tf2_ros_DIR:PATH=/home/vitaly/ros_catkin_ws/devel_isolated/tf2_ros/share/tf2_ros
 
 //The directory containing a CMake configuration file for tf.
 tf_DIR:PATH=/home/vitaly/ros_catkin_ws/devel_isolated/tf/share/tf/cmake
-
-//Value Computed by CMake
-theta_star_planner_BINARY_DIR:STATIC=/home/vitaly/theta_star_ws/build/ThetaStarROS
-
-//Value Computed by CMake
-theta_star_planner_IS_TOP_LEVEL:STATIC=OFF
-
-//Value Computed by CMake
-theta_star_planner_SOURCE_DIR:STATIC=/home/vitaly/theta_star_ws/src/ThetaStarROS
-
-//Dependencies for the target
-theta_star_planner_node_lib_LIB_DEPENDS:STATIC=general;/usr/lib/x86_64-linux-gnu/liborocos-kdl.so;general;/usr/lib/x86_64-linux-gnu/liborocos-kdl.so;general;/home/vitaly/ros_catkin_ws/devel_isolated/tf/lib/libtf.so;general;/home/vitaly/ros_catkin_ws/devel_isolated/tf2_ros/lib/libtf2_ros.so;general;/home/vitaly/ros_catkin_ws/devel_isolated/actionlib/lib/libactionlib.so;general;/home/vitaly/ros_catkin_ws/devel_isolated/message_filters/lib/libmessage_filters.so;general;/home/vitaly/ros_catkin_ws/devel_isolated/tf2/lib/libtf2.so;general;/home/vitaly/ros_catkin_ws/devel_isolated/roscpp/lib/libroscpp.so;general;/usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.74.0;general;/usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.74.0;general;/home/vitaly/ros_catkin_ws/devel_isolated/rosconsole/lib/librosconsole.so;general;/home/vitaly/ros_catkin_ws/devel_isolated/rosconsole/lib/librosconsole_log4cxx.so;general;/home/vitaly/ros_catkin_ws/devel_isolated/rosconsole/lib/librosconsole_backend_interface.so;general;/usr/lib/x86_64-linux-gnu/liblog4cxx.so;general;/usr/lib/x86_64-linux-gnu/libboost_regex.so.1.74.0;general;/home/vitaly/ros_catkin_ws/devel_isolated/xmlrpcpp/lib/libxmlrpcpp.so;general;/home/vitaly/ros_catkin_ws/devel_isolated/roscpp_serialization/lib/libroscpp_serialization.so;general;/home/vitaly/ros_catkin_ws/devel_isolated/rostime/lib/librostime.so;general;/usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.74.0;general;/home/vitaly/ros_catkin_ws/devel_isolated/cpp_common/lib/libcpp_common.so;general;/usr/lib/x86_64-linux-gnu/libboost_system.so.1.74.0;general;/usr/lib/x86_64-linux-gnu/libboost_thread.so.1.74.0;general;/usr/lib/x86_64-linux-gnu/libconsole_bridge.so.1.0;
-
-//Value Computed by CMake
-tx2_action_server_BINARY_DIR:STATIC=/home/vitaly/theta_star_ws/build/tx2_action_server
-
-//Value Computed by CMake
-tx2_action_server_IS_TOP_LEVEL:STATIC=OFF
-
-//Value Computed by CMake
-tx2_action_server_SOURCE_DIR:STATIC=/home/vitaly/theta_star_ws/src/tx2_action_server
-
-//The directory containing a CMake configuration file for visualization_msgs.
-visualization_msgs_DIR:PATH=/home/vitaly/ros_catkin_ws/devel_isolated/visualization_msgs/share/visualization_msgs/cmake
 
 //The directory containing a CMake configuration file for xmlrpcpp.
 xmlrpcpp_DIR:PATH=/home/vitaly/ros_catkin_ws/devel_isolated/xmlrpcpp/share/xmlrpcpp/cmake
@@ -725,7 +698,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=9
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=7
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -770,6 +743,8 @@ CMAKE_UNAME:INTERNAL=/usr/bin/uname
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Details about finding Python
 FIND_PACKAGE_MESSAGE_DETAILS_Python:INTERNAL=[/usr/bin/python3.10][cfound components: Interpreter ][v3.10.12()]
+//Details about finding Python3
+FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[/usr/bin/python3.10][/usr/include/python3.10][/usr/lib/x86_64-linux-gnu/libpython3.10.so][/usr/lib/python3/dist-packages/numpy/core/include][cfound components: Interpreter Development NumPy Development.Module Development.Embed ][v3.10.12()]
 //Details about finding PythonInterp
 FIND_PACKAGE_MESSAGE_DETAILS_PythonInterp:INTERNAL=[/home/vitaly/miniconda3/bin/python3][v3.8.15(3)]
 //Details about finding Threads
@@ -792,6 +767,20 @@ PYTHON_EXECUTABLE-ADVANCED:INTERNAL=1
 PYTHON_INSTALL_DIR:INTERNAL=lib/python3/dist-packages
 //CMAKE_INSTALL_PREFIX during last run
 _GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=/home/vitaly/theta_star_ws/install
+_Python3_DEVELOPMENT_EMBED_SIGNATURE:INTERNAL=625d9e0f7a1af1ddb80bfa11fbea90e0
+_Python3_DEVELOPMENT_MODULE_SIGNATURE:INTERNAL=4bc14a0ea6a21ea267e38aa660e9b54b
+//Path to a program.
+_Python3_EXECUTABLE:INTERNAL=/usr/bin/python3.10
+//Path to a file.
+_Python3_INCLUDE_DIR:INTERNAL=/usr/include/python3.10
+//Python3 Properties
+_Python3_INTERPRETER_PROPERTIES:INTERNAL=Python;3;10;12;64;;cpython-310-x86_64-linux-gnu;/usr/lib/python3.10;/usr/lib/python3.10;/usr/lib/python3/dist-packages;/usr/lib/python3/dist-packages
+_Python3_INTERPRETER_SIGNATURE:INTERNAL=b91b4035ecb3bb3f5760d35922531bcd
+//Path to a library.
+_Python3_LIBRARY_RELEASE:INTERNAL=/usr/lib/x86_64-linux-gnu/libpython3.10.so
+_Python3_NUMPY_SIGNATURE:INTERNAL=03637bbc493fe88903739a5129f0293e
+//Path to a file.
+_Python3_NumPy_INCLUDE_DIR:INTERNAL=/usr/lib/python3/dist-packages/numpy/core/include
 //Path to a program.
 _Python_EXECUTABLE:INTERNAL=/usr/bin/python3.10
 //Python Properties
