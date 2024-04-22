@@ -14,8 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
 )
 
-set(acados_include "/home/vitaly/theta_star_ws/acados/include")
-set(acados_lib "/home/vitaly/theta_star_ws/acados/lib")
+set(acados_include "/home/vitaly/local_planner_ws/acados/include")
+set(acados_lib "/home/vitaly/local_planner_ws/acados/lib")
 
 include_directories(
 include

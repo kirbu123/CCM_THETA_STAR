@@ -11,27 +11,16 @@ MPC_Planner::MPC_Planner()
 
 OptTraj MPC_Planner::get_path()
 {
-    ROS_INFO("get path flag -2");
     robot_model_solver_capsule *acados_ocp_capsule = robot_model_acados_create_capsule();
-    ROS_INFO("get path flag -1");
     int status = robot_model_acados_create(acados_ocp_capsule);
-    ROS_INFO("get path flag 0");
     initial_guess();
-    ROS_INFO("get path flag 1");
     initialize_solver(acados_ocp_capsule);
-    ROS_INFO("get path flag 2");
     set_x0(acados_ocp_capsule);
-    ROS_INFO("get path flag 3");
     set_yref(acados_ocp_capsule);
-    ROS_INFO("get path flag 4");
     set_initial_solution(acados_ocp_capsule);
-    ROS_INFO("get path flag 5");
     set_parameters(acados_ocp_capsule);
-    ROS_INFO("get path flag 6");
     opt_traj = solve_problem(acados_ocp_capsule);
-    ROS_INFO("get path flag 7");
     free_solver(acados_ocp_capsule);
-    ROS_INFO("get path flag 8");
     return opt_traj;
 }
   

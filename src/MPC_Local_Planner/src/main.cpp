@@ -45,7 +45,6 @@ void setting_mpc_conditions()
 void solve_mpc_problem()
 {
     ROS_INFO("SOLVE MPC PROBLEM");
-    std::cout << "SIZE_solve_mpc " << mpc.x_path.size() << ' ' << mpc_utils.map_received << ' ' << !robot_reached << std::endl;
     if(mpc.x_path.size() != 0 && mpc_utils.map_received && !robot_reached)
     {
         ROS_INFO("STARTING MPC PROBLEM");
@@ -86,9 +85,7 @@ void solve_mpc_problem()
         
         if(mpc.length_filter_path > mpc.stop_solving_length)
         {
-            ROS_INFO("TRAJECTORY GETTED 1");
             opt_traj = mpc.get_path();
-            ROS_INFO("TRAJECTORY GETTED 2");
             publish_local_path(opt_traj);
             pub_marker_obst_cells.publish(obst_cells_mk);
         }
@@ -140,6 +137,7 @@ void status_control_back(const std_msgs::String& msg)
 void publish_local_path(OptTraj traj)
 {
     opt_traj_mk.points.clear();
+    path_msg.header.frame_id = global_frame;
     path_msg.header.stamp = ros::Time::now();
     path_msg.poses.clear();
 

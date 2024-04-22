@@ -1,8 +1,5 @@
 /*
- * Copyright 2019 Gianluca Frison, Dimitris Kouzoupis, Robin Verschueren,
- * Andrea Zanelli, Niels van Duijkeren, Jonathan Frey, Tommaso Sartor,
- * Branimir Novoselnik, Rien Quirynen, Rezart Qelibari, Dang Doan,
- * Jonas Koenemann, Yutao Chen, Tobias Schöls, Jonas Schlagenhauf, Moritz Diehl
+ * Copyright (c) The acados authors.
  *
  * This file is part of acados.
  *
@@ -51,23 +48,23 @@
 
 // ** solver data **
 
-sim_solver_capsule * robot_model_acados_sim_solver_create_capsule()
+robot_model_sim_solver_capsule * robot_model_acados_sim_solver_create_capsule()
 {
-    void* capsule_mem = malloc(sizeof(sim_solver_capsule));
-    sim_solver_capsule *capsule = (sim_solver_capsule *) capsule_mem;
+    void* capsule_mem = malloc(sizeof(robot_model_sim_solver_capsule));
+    robot_model_sim_solver_capsule *capsule = (robot_model_sim_solver_capsule *) capsule_mem;
 
     return capsule;
 }
 
 
-int robot_model_acados_sim_solver_free_capsule(sim_solver_capsule * capsule)
+int robot_model_acados_sim_solver_free_capsule(robot_model_sim_solver_capsule * capsule)
 {
     free(capsule);
     return 0;
 }
 
 
-int robot_model_acados_sim_create(sim_solver_capsule * capsule)
+int robot_model_acados_sim_create(robot_model_sim_solver_capsule * capsule)
 {
     // initialize
     const int nx = ROBOT_MODEL_NX;
@@ -292,7 +289,7 @@ int robot_model_acados_sim_create(sim_solver_capsule * capsule)
 }
 
 
-int robot_model_acados_sim_solve(sim_solver_capsule *capsule)
+int robot_model_acados_sim_solve(robot_model_sim_solver_capsule *capsule)
 {
     // integrate dynamics using acados sim_solver
     int status = sim_solve(capsule->acados_sim_solver,
@@ -304,7 +301,7 @@ int robot_model_acados_sim_solve(sim_solver_capsule *capsule)
 }
 
 
-int robot_model_acados_sim_free(sim_solver_capsule *capsule)
+int robot_model_acados_sim_free(robot_model_sim_solver_capsule *capsule)
 {
     // free memory
     sim_solver_destroy(capsule->acados_sim_solver);
@@ -318,12 +315,15 @@ int robot_model_acados_sim_free(sim_solver_capsule *capsule)
     external_function_param_casadi_free(capsule->sim_forw_vde_casadi);
     external_function_param_casadi_free(capsule->sim_vde_adj_casadi);
     external_function_param_casadi_free(capsule->sim_expl_ode_fun_casadi);
+    free(capsule->sim_forw_vde_casadi);
+    free(capsule->sim_vde_adj_casadi);
+    free(capsule->sim_expl_ode_fun_casadi);
 
     return 0;
 }
 
 
-int robot_model_acados_sim_update_params(sim_solver_capsule *capsule, double *p, int np)
+int robot_model_acados_sim_update_params(robot_model_sim_solver_capsule *capsule, double *p, int np)
 {
     int status = 0;
     int casadi_np = ROBOT_MODEL_NP;
@@ -341,32 +341,32 @@ int robot_model_acados_sim_update_params(sim_solver_capsule *capsule, double *p,
 }
 
 /* getters pointers to C objects*/
-sim_config * robot_model_acados_get_sim_config(sim_solver_capsule *capsule)
+sim_config * robot_model_acados_get_sim_config(robot_model_sim_solver_capsule *capsule)
 {
     return capsule->acados_sim_config;
 };
 
-sim_in * robot_model_acados_get_sim_in(sim_solver_capsule *capsule)
+sim_in * robot_model_acados_get_sim_in(robot_model_sim_solver_capsule *capsule)
 {
     return capsule->acados_sim_in;
 };
 
-sim_out * robot_model_acados_get_sim_out(sim_solver_capsule *capsule)
+sim_out * robot_model_acados_get_sim_out(robot_model_sim_solver_capsule *capsule)
 {
     return capsule->acados_sim_out;
 };
 
-void * robot_model_acados_get_sim_dims(sim_solver_capsule *capsule)
+void * robot_model_acados_get_sim_dims(robot_model_sim_solver_capsule *capsule)
 {
     return capsule->acados_sim_dims;
 };
 
-sim_opts * robot_model_acados_get_sim_opts(sim_solver_capsule *capsule)
+sim_opts * robot_model_acados_get_sim_opts(robot_model_sim_solver_capsule *capsule)
 {
     return capsule->acados_sim_opts;
 };
 
-sim_solver  * robot_model_acados_get_sim_solver(sim_solver_capsule *capsule)
+sim_solver  * robot_model_acados_get_sim_solver(robot_model_sim_solver_capsule *capsule)
 {
     return capsule->acados_sim_solver;
 };

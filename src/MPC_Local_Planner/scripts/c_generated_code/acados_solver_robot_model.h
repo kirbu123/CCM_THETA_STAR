@@ -1,8 +1,5 @@
 /*
- * Copyright 2019 Gianluca Frison, Dimitris Kouzoupis, Robin Verschueren,
- * Andrea Zanelli, Niels van Duijkeren, Jonathan Frey, Tommaso Sartor,
- * Branimir Novoselnik, Rien Quirynen, Rezart Qelibari, Dang Doan,
- * Jonas Koenemann, Yutao Chen, Tobias Schöls, Jonas Schlagenhauf, Moritz Diehl
+ * Copyright (c) The acados authors.
  *
  * This file is part of acados.
  *
@@ -49,13 +46,16 @@
 #define ROBOT_MODEL_NSBX   0
 #define ROBOT_MODEL_NSBU   0
 #define ROBOT_MODEL_NSH    0
+#define ROBOT_MODEL_NSH0   0
 #define ROBOT_MODEL_NSG    0
 #define ROBOT_MODEL_NSPHI  0
 #define ROBOT_MODEL_NSHN   0
 #define ROBOT_MODEL_NSGN   0
 #define ROBOT_MODEL_NSPHIN 0
+#define ROBOT_MODEL_NSPHI0 0
 #define ROBOT_MODEL_NSBXN  0
 #define ROBOT_MODEL_NS     0
+#define ROBOT_MODEL_NS0    0
 #define ROBOT_MODEL_NSN    0
 #define ROBOT_MODEL_NG     0
 #define ROBOT_MODEL_NBXN   0
@@ -65,8 +65,10 @@
 #define ROBOT_MODEL_NYN    44
 #define ROBOT_MODEL_N      20
 #define ROBOT_MODEL_NH     0
-#define ROBOT_MODEL_NPHI   0
 #define ROBOT_MODEL_NHN    0
+#define ROBOT_MODEL_NH0    0
+#define ROBOT_MODEL_NPHI0  0
+#define ROBOT_MODEL_NPHI   0
 #define ROBOT_MODEL_NPHIN  0
 #define ROBOT_MODEL_NR     0
 
@@ -120,6 +122,9 @@ typedef struct robot_model_solver_capsule
 
 
     // constraints
+
+
+
 
 
 

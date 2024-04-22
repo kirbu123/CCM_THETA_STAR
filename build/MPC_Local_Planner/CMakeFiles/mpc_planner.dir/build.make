@@ -125,7 +125,7 @@ mpc_planner_EXTERNAL_OBJECTS =
 /home/vitaly/local_planner_ws/devel/lib/mpc_planner/mpc_planner: MPC_Local_Planner/CMakeFiles/mpc_planner.dir/src/MPC_ROS_Utils.cpp.o
 /home/vitaly/local_planner_ws/devel/lib/mpc_planner/mpc_planner: MPC_Local_Planner/CMakeFiles/mpc_planner.dir/build.make
 /home/vitaly/local_planner_ws/devel/lib/mpc_planner/mpc_planner: /home/vitaly/local_planner_ws/src/MPC_Local_Planner/scripts/c_generated_code/libacados_ocp_solver_robot_model.so
-/home/vitaly/local_planner_ws/devel/lib/mpc_planner/mpc_planner: /home/vitaly/theta_star_ws/acados/lib/libacados.so
+/home/vitaly/local_planner_ws/devel/lib/mpc_planner/mpc_planner: /home/vitaly/local_planner_ws/acados/lib/libacados.so
 /home/vitaly/local_planner_ws/devel/lib/mpc_planner/mpc_planner: /home/vitaly/ros_catkin_ws/devel_isolated/cv_bridge/lib/libcv_bridge.so
 /home/vitaly/local_planner_ws/devel/lib/mpc_planner/mpc_planner: /usr/lib/x86_64-linux-gnu/libopencv_calib3d.so.4.5.4d
 /home/vitaly/local_planner_ws/devel/lib/mpc_planner/mpc_planner: /usr/lib/x86_64-linux-gnu/libopencv_dnn.so.4.5.4d

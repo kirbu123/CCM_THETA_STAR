@@ -1,8 +1,5 @@
 /*
- * Copyright 2019 Gianluca Frison, Dimitris Kouzoupis, Robin Verschueren,
- * Andrea Zanelli, Niels van Duijkeren, Jonathan Frey, Tommaso Sartor,
- * Branimir Novoselnik, Rien Quirynen, Rezart Qelibari, Dang Doan,
- * Jonas Koenemann, Yutao Chen, Tobias Schöls, Jonas Schlagenhauf, Moritz Diehl
+ * Copyright (c) The acados authors.
  *
  * This file is part of acados.
  *
@@ -42,9 +39,7 @@
 
 // example specific
 #include "robot_model_model/robot_model_model.h"
-#include "robot_model_constraints/robot_model_constraints.h"
 #include "robot_model_cost/robot_model_cost.h"
-
 
 
 
@@ -54,32 +49,41 @@
 #define NZ     ROBOT_MODEL_NZ
 #define NU     ROBOT_MODEL_NU
 #define NP     ROBOT_MODEL_NP
-#define NBX    ROBOT_MODEL_NBX
-#define NBX0   ROBOT_MODEL_NBX0
-#define NBU    ROBOT_MODEL_NBU
-#define NSBX   ROBOT_MODEL_NSBX
-#define NSBU   ROBOT_MODEL_NSBU
-#define NSH    ROBOT_MODEL_NSH
-#define NSG    ROBOT_MODEL_NSG
-#define NSPHI  ROBOT_MODEL_NSPHI
-#define NSHN   ROBOT_MODEL_NSHN
-#define NSGN   ROBOT_MODEL_NSGN
-#define NSPHIN ROBOT_MODEL_NSPHIN
-#define NSBXN  ROBOT_MODEL_NSBXN
-#define NS     ROBOT_MODEL_NS
-#define NSN    ROBOT_MODEL_NSN
-#define NG     ROBOT_MODEL_NG
-#define NBXN   ROBOT_MODEL_NBXN
-#define NGN    ROBOT_MODEL_NGN
 #define NY0    ROBOT_MODEL_NY0
 #define NY     ROBOT_MODEL_NY
 #define NYN    ROBOT_MODEL_NYN
-// #define N      ROBOT_MODEL_N // pay attantion!
+
+#define NBX    ROBOT_MODEL_NBX
+#define NBX0   ROBOT_MODEL_NBX0
+#define NBU    ROBOT_MODEL_NBU
+#define NG     ROBOT_MODEL_NG
+#define NBXN   ROBOT_MODEL_NBXN
+#define NGN    ROBOT_MODEL_NGN
+
 #define NH     ROBOT_MODEL_NH
-#define NPHI   ROBOT_MODEL_NPHI
 #define NHN    ROBOT_MODEL_NHN
+#define NH0    ROBOT_MODEL_NH0
+#define NPHI   ROBOT_MODEL_NPHI
 #define NPHIN  ROBOT_MODEL_NPHIN
+#define NPHI0  ROBOT_MODEL_NPHI0
 #define NR     ROBOT_MODEL_NR
+
+#define NS     ROBOT_MODEL_NS
+#define NS0    ROBOT_MODEL_NS0
+#define NSN    ROBOT_MODEL_NSN
+
+#define NSBX   ROBOT_MODEL_NSBX
+#define NSBU   ROBOT_MODEL_NSBU
+#define NSH0   ROBOT_MODEL_NSH0
+#define NSH    ROBOT_MODEL_NSH
+#define NSHN   ROBOT_MODEL_NSHN
+#define NSG    ROBOT_MODEL_NSG
+#define NSPHI0 ROBOT_MODEL_NSPHI0
+#define NSPHI  ROBOT_MODEL_NSPHI
+#define NSPHIN ROBOT_MODEL_NSPHIN
+#define NSGN   ROBOT_MODEL_NSGN
+#define NSBXN  ROBOT_MODEL_NSBXN
+
 
 
 // ** solver data **
@@ -141,6 +145,7 @@ void robot_model_acados_create_1_set_plan(ocp_nlp_plan_t* nlp_solver_plan, const
     /************************************************
     *  plan
     ************************************************/
+
     nlp_solver_plan->nlp_solver = SQP;
 
     nlp_solver_plan->ocp_qp_solver_plan.qp_solver = PARTIAL_CONDENSING_HPIPM;
@@ -157,10 +162,15 @@ void robot_model_acados_create_1_set_plan(ocp_nlp_plan_t* nlp_solver_plan, const
         nlp_solver_plan->sim_solver_plan[i].sim_solver = ERK;
     }
 
-    for (int i = 0; i < N; i++)
-    {nlp_solver_plan->nlp_constraints[i] = BGH;
+    nlp_solver_plan->nlp_constraints[0] = BGH;
+
+    for (int i = 1; i < N; i++)
+    {
+        nlp_solver_plan->nlp_constraints[i] = BGH;
     }
     nlp_solver_plan->nlp_constraints[N] = BGH;
+
+    nlp_solver_plan->regularization = NO_REGULARIZE;
 }
 
 
@@ -222,11 +232,16 @@ ocp_nlp_dims* robot_model_acados_create_2_create_and_set_dimensions(robot_model_
     }
 
     // for initial state
-    nbx[0]  = NBX0;
+    nbx[0] = NBX0;
     nsbx[0] = 0;
-    ns[0] = NS - NSBX;
+    ns[0] = NS0;
     nbxe[0] = 4;
     ny[0] = NY0;
+    nh[0] = NH0;
+    nsh[0] = NSH0;
+    nsphi[0] = NSPHI0;
+    nphi[0] = NPHI0;
+
 
     // terminal - common
     nu[N]   = 0;
@@ -269,15 +284,21 @@ ocp_nlp_dims* robot_model_acados_create_2_create_and_set_dimensions(robot_model_
     ocp_nlp_dims_set_cost(nlp_config, nlp_dims, 0, "ny", &ny[0]);
     for (int i = 1; i < N; i++)
         ocp_nlp_dims_set_cost(nlp_config, nlp_dims, i, "ny", &ny[i]);
+    ocp_nlp_dims_set_constraints(nlp_config, nlp_dims, 0, "nh", &nh[0]);
+    ocp_nlp_dims_set_constraints(nlp_config, nlp_dims, 0, "nsh", &nsh[0]);
 
-    for (int i = 0; i < N; i++)
+    for (int i = 1; i < N; i++)
     {
+        ocp_nlp_dims_set_constraints(nlp_config, nlp_dims, i, "nh", &nh[i]);
+        ocp_nlp_dims_set_constraints(nlp_config, nlp_dims, i, "nsh", &nsh[i]);
     }
     ocp_nlp_dims_set_constraints(nlp_config, nlp_dims, N, "nh", &nh[N]);
     ocp_nlp_dims_set_constraints(nlp_config, nlp_dims, N, "nsh", &nsh[N]);
     ocp_nlp_dims_set_cost(nlp_config, nlp_dims, N, "ny", &ny[N]);
+
     free(intNp1mem);
-return nlp_dims;
+
+    return nlp_dims;
 }
 
 
@@ -287,6 +308,7 @@ return nlp_dims;
 void robot_model_acados_create_3_create_and_set_functions(robot_model_solver_capsule* capsule)
 {
     const int N = capsule->nlp_solver_plan->N;
+
 
     /************************************************
     *  external functions
@@ -300,9 +322,7 @@ void robot_model_acados_create_3_create_and_set_functions(robot_model_solver_cap
         capsule->__CAPSULE_FNC__.casadi_sparsity_out = & __MODEL_BASE_FNC__ ## _sparsity_out; \
         capsule->__CAPSULE_FNC__.casadi_work = & __MODEL_BASE_FNC__ ## _work; \
         external_function_param_casadi_create(&capsule->__CAPSULE_FNC__ , 80); \
-    }while(false)
-
-
+    } while(false)
 
 
     // explicit ode
@@ -322,19 +342,19 @@ void robot_model_acados_create_3_create_and_set_functions(robot_model_solver_cap
     MAP_CASADI_FNC(cost_y_0_fun_jac_ut_xt, robot_model_cost_y_0_fun_jac_ut_xt);
     MAP_CASADI_FNC(cost_y_0_hess, robot_model_cost_y_0_hess);
     // nonlinear least squares cost
-    capsule->cost_y_fun = (external_function_param_casadi *) malloc(sizeof(external_function_param_casadi)*N);
+    capsule->cost_y_fun = (external_function_param_casadi *) malloc(sizeof(external_function_param_casadi)*(N-1));
     for (int i = 0; i < N-1; i++)
     {
         MAP_CASADI_FNC(cost_y_fun[i], robot_model_cost_y_fun);
     }
 
-    capsule->cost_y_fun_jac_ut_xt = (external_function_param_casadi *) malloc(sizeof(external_function_param_casadi)*N);
+    capsule->cost_y_fun_jac_ut_xt = (external_function_param_casadi *) malloc(sizeof(external_function_param_casadi)*(N-1));
     for (int i = 0; i < N-1; i++)
     {
         MAP_CASADI_FNC(cost_y_fun_jac_ut_xt[i], robot_model_cost_y_fun_jac_ut_xt);
     }
 
-    capsule->cost_y_hess = (external_function_param_casadi *) malloc(sizeof(external_function_param_casadi)*N);
+    capsule->cost_y_hess = (external_function_param_casadi *) malloc(sizeof(external_function_param_casadi)*(N-1));
     for (int i = 0; i < N-1; i++)
     {
         MAP_CASADI_FNC(cost_y_hess[i], robot_model_cost_y_hess);
@@ -452,6 +472,8 @@ void robot_model_acados_create_5_set_nlp_in(robot_model_solver_capsule* capsule,
     ocp_nlp_config* nlp_config = capsule->nlp_config;
     ocp_nlp_dims* nlp_dims = capsule->nlp_dims;
 
+    int tmp_int = 0;
+
     /************************************************
     *  nlp_in
     ************************************************/
@@ -460,12 +482,13 @@ void robot_model_acados_create_5_set_nlp_in(robot_model_solver_capsule* capsule,
     ocp_nlp_in * nlp_in = capsule->nlp_in;
 
     // set up time_steps
-    
 
-    if (new_time_steps) {
+    if (new_time_steps)
+    {
         robot_model_acados_update_time_steps(capsule, N, new_time_steps);
-    } else {// all time_steps are identical
-        double time_step = 0.15;
+    }
+    else
+    {double time_step = 0.15;
         for (int i = 0; i < N; i++)
         {
             ocp_nlp_in_set(nlp_config, nlp_dims, nlp_in, i, "Ts", &time_step);
@@ -478,7 +501,6 @@ void robot_model_acados_create_5_set_nlp_in(robot_model_solver_capsule* capsule,
     {
         ocp_nlp_dynamics_model_set(nlp_config, nlp_dims, nlp_in, i, "expl_vde_forw", &capsule->forw_vde_casadi[i]);
         ocp_nlp_dynamics_model_set(nlp_config, nlp_dims, nlp_in, i, "expl_ode_fun", &capsule->expl_ode_fun[i]);
-    
     }
 
     /**** Cost ****/
@@ -486,18 +508,7 @@ void robot_model_acados_create_5_set_nlp_in(robot_model_solver_capsule* capsule,
     // change only the non-zero elements:
     ocp_nlp_cost_model_set(nlp_config, nlp_dims, nlp_in, 0, "yref", yref_0);
     free(yref_0);
-    double* yref = calloc(NY, sizeof(double));
-    // change only the non-zero elements:
 
-    for (int i = 1; i < N; i++)
-    {
-        ocp_nlp_cost_model_set(nlp_config, nlp_dims, nlp_in, i, "yref", yref);
-    }
-    free(yref);
-    double* yref_e = calloc(NYN, sizeof(double));
-    // change only the non-zero elements:
-    ocp_nlp_cost_model_set(nlp_config, nlp_dims, nlp_in, N, "yref", yref_e);
-    free(yref_e);
    double* W_0 = calloc(NY0*NY0, sizeof(double));
     // change only the non-zero elements:
     W_0[0+(NY0) * 0] = 1;
@@ -548,6 +559,14 @@ void robot_model_acados_create_5_set_nlp_in(robot_model_solver_capsule* capsule,
     W_0[45+(NY0) * 45] = 10;
     ocp_nlp_cost_model_set(nlp_config, nlp_dims, nlp_in, 0, "W", W_0);
     free(W_0);
+    double* yref = calloc(NY, sizeof(double));
+    // change only the non-zero elements:
+
+    for (int i = 1; i < N; i++)
+    {
+        ocp_nlp_cost_model_set(nlp_config, nlp_dims, nlp_in, i, "yref", yref);
+    }
+    free(yref);
     double* W = calloc(NY*NY, sizeof(double));
     // change only the non-zero elements:
     W[0+(NY) * 0] = 1;
@@ -602,6 +621,11 @@ void robot_model_acados_create_5_set_nlp_in(robot_model_solver_capsule* capsule,
         ocp_nlp_cost_model_set(nlp_config, nlp_dims, nlp_in, i, "W", W);
     }
     free(W);
+    double* yref_e = calloc(NYN, sizeof(double));
+    // change only the non-zero elements:
+    ocp_nlp_cost_model_set(nlp_config, nlp_dims, nlp_in, N, "yref", yref_e);
+    free(yref_e);
+
     double* W_e = calloc(NYN*NYN, sizeof(double));
     // change only the non-zero elements:
     W_e[0+(NYN) * 0] = 100;
@@ -665,6 +689,9 @@ void robot_model_acados_create_5_set_nlp_in(robot_model_solver_capsule* capsule,
 
 
 
+
+
+
     /**** Constraints ****/
 
     // bounds for initial stage
@@ -694,6 +721,13 @@ void robot_model_acados_create_5_set_nlp_in(robot_model_solver_capsule* capsule,
     idxbxe_0[3] = 3;
     ocp_nlp_constraints_model_set(nlp_config, nlp_dims, nlp_in, 0, "idxbxe", idxbxe_0);
     free(idxbxe_0);
+
+
+
+
+
+
+
 
     /* constraints that are the same for initial and intermediate */
     // u
@@ -774,8 +808,6 @@ void robot_model_acados_create_5_set_nlp_in(robot_model_solver_capsule* capsule,
 
 
 
-
-
 }
 
 
@@ -792,7 +824,8 @@ void robot_model_acados_create_6_set_opts(robot_model_solver_capsule* capsule)
     *  opts
     ************************************************/
 
-
+int fixed_hess = 0;
+    ocp_nlp_solver_opts_set(nlp_config, nlp_opts, "fixed_hess", &fixed_hess);
     ocp_nlp_solver_opts_set(nlp_config, nlp_opts, "globalization", "fixed_step");int full_step_dual = 0;
     ocp_nlp_solver_opts_set(nlp_config, capsule->nlp_opts, "full_step_dual", &full_step_dual);
 
@@ -817,7 +850,6 @@ void robot_model_acados_create_6_set_opts(robot_model_solver_capsule* capsule)
     for (int i = 0; i < N; i++)
         ocp_nlp_solver_opts_set_at_stage(nlp_config, nlp_opts, i, "dynamics_newton_iter", &newton_iter_val);
 
-
     // set up sim_method_jac_reuse
     bool tmp_bool = (bool) 0;
     for (int i = 0; i < N; i++)
@@ -830,9 +862,7 @@ void robot_model_acados_create_6_set_opts(robot_model_solver_capsule* capsule)
     ocp_nlp_solver_opts_set(nlp_config, nlp_opts, "levenberg_marquardt", &levenberg_marquardt);
 
     /* options QP solver */
-    int qp_solver_cond_N;
-
-    const int qp_solver_cond_N_ori = 10;
+    int qp_solver_cond_N;const int qp_solver_cond_N_ori = 10;
     qp_solver_cond_N = N < qp_solver_cond_N_ori ? N : qp_solver_cond_N_ori; // use the minimum value here
     ocp_nlp_solver_opts_set(nlp_config, nlp_opts, "qp_cond_N", &qp_solver_cond_N);
 
@@ -864,7 +894,9 @@ void robot_model_acados_create_6_set_opts(robot_model_solver_capsule* capsule)
     int qp_solver_iter_max = 100;
     ocp_nlp_solver_opts_set(nlp_config, nlp_opts, "qp_iter_max", &qp_solver_iter_max);
 
-int print_level = 0;
+
+
+    int print_level = 0;
     ocp_nlp_solver_opts_set(nlp_config, nlp_opts, "print_level", &print_level);
     int qp_solver_cond_ric_alg = 1;
     ocp_nlp_solver_opts_set(nlp_config, nlp_opts, "qp_cond_ric_alg", &qp_solver_cond_ric_alg);
@@ -1019,7 +1051,7 @@ int robot_model_acados_reset(robot_model_solver_capsule* capsule, int reset_qp_s
     ocp_nlp_in* nlp_in = capsule->nlp_in;
     ocp_nlp_solver* nlp_solver = capsule->nlp_solver;
 
-    double* buffer = calloc(NX+NU+NZ+2*NS+2*NSN+NBX+NBU+NG+NH+NPHI+NBX0+NBXN+NHN+NPHIN+NGN, sizeof(double));
+    double* buffer = calloc(NX+NU+NZ+2*NS+2*NSN+2*NS0+NBX+NBU+NG+NH+NPHI+NBX0+NBXN+NHN+NH0+NPHIN+NGN, sizeof(double));
 
     for(int i=0; i<N+1; i++)
     {
@@ -1067,10 +1099,14 @@ int robot_model_acados_update_params(robot_model_solver_capsule* capsule, int st
     {
         capsule->forw_vde_casadi[stage].set_param(capsule->forw_vde_casadi+stage, p);
         capsule->expl_ode_fun[stage].set_param(capsule->expl_ode_fun+stage, p);
-    
 
         // constraints
-    
+        if (stage == 0)
+        {
+        }
+        else
+        {
+        }
 
         // cost
         if (stage == 0)
@@ -1095,7 +1131,6 @@ int robot_model_acados_update_params(robot_model_solver_capsule* capsule, int st
         capsule->cost_y_e_fun_jac_ut_xt.set_param(&capsule->cost_y_e_fun_jac_ut_xt, p);
         capsule->cost_y_e_hess.set_param(&capsule->cost_y_e_hess, p);
         // constraints
-    
     }
 
     return solver_status;
@@ -1128,21 +1163,23 @@ int robot_model_acados_update_params_sparse(robot_model_solver_capsule * capsule
         capsule->expl_ode_fun[stage].set_param_sparse(capsule->expl_ode_fun+stage, n_update, idx, p);
     
 
-        // constraints
-    
-
-        // cost
+        // cost & constraints
         if (stage == 0)
         {
+            // cost
             capsule->cost_y_0_fun.set_param_sparse(&capsule->cost_y_0_fun, n_update, idx, p);
             capsule->cost_y_0_fun_jac_ut_xt.set_param_sparse(&capsule->cost_y_0_fun_jac_ut_xt, n_update, idx, p);
             capsule->cost_y_0_hess.set_param_sparse(&capsule->cost_y_0_hess, n_update, idx, p);
+            // constraints
+        
         }
         else // 0 < stage < N
         {
             capsule->cost_y_fun[stage-1].set_param_sparse(capsule->cost_y_fun+stage-1, n_update, idx, p);
             capsule->cost_y_fun_jac_ut_xt[stage-1].set_param_sparse(capsule->cost_y_fun_jac_ut_xt+stage-1, n_update, idx, p);
             capsule->cost_y_hess[stage-1].set_param_sparse(capsule->cost_y_hess+stage-1, n_update, idx, p);
+
+        
         }
     }
 
